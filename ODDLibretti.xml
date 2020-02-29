@@ -1,0 +1,789 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0" xml:lang="en">
+   <teiHeader>
+      <fileDesc>
+         <titleStmt>
+            <title type="short">ODD du projet Libretti</title>
+            <title>ODD by Example customization</title>
+            <author>Promotion M2 TNAH 2019-2020</author>
+         </titleStmt>
+         <publicationStmt>
+            <p>Ecole nationale des Chartes, Master Technologies Numériques Appliquées à l'Histoire, Promotion 2019-2020, Deuxième année</p>
+         </publicationStmt>
+         <sourceDesc>
+            <p>Derived from <ref target="https://www.tei-c.org/Vault/P5/current/xml/tei/odd/p5subset.xml">base odd</ref> after an analysis of 1 file</p>
+         </sourceDesc>
+      </fileDesc>
+   </teiHeader>
+   <text>
+      <body>
+         <div1>
+            <head> Documentation du projet</head>
+            <div2>
+               <head>Qu'est-ce que CapiTainS</head>
+               <p>CapiTainS est un ensemble d’outils dont l’objectif est de faciliter la citation de textes. Il s’appuie sur des identifiants de texte (l’Eneide, la Bible, etc.) et des éléments de passages de textes (vers 1, poème 7…). Il s’appuie également sur le standard CTS.</p>
+               
+               <p>La norme CapiTainS sépare les métadonnées des textes à proprement parler : les métadonnées sont contenues dans des fichiers __cts__.xml, tandis que les textes encodés se trouvent dans des fichiers .xml dont le nommage est à définir. Le principe de CTS reposant sur les concepts de textgroup (auteur) et de work (oeuvre, ici texte encodé), il faut un fichier __cts__.xml pour chaque textgroup (Offenbach, Gounod, Saint-Saëns, Wagner.....) et un fichier __cts__.xml par texte encodé.</p>
+               
+               <div3><head>L’écosphère CapiTainS</head>
+                  
+                  <p>A terme, CapiTainS souhaite développer des logiciels pour faciliter son utilisation. Le système est pyramidal : à la base se trouve la briqueMyCapytain. Il s’agit d’une librairie composée des outils pour utiliser CapiTainS. A partir de cette brique sont développés d’autres outils : Némo, Nautilus.</p>
+                  
+                  <p>L’outil Nautilus, par exemple, permet de générer une API pour partager ses documents. L’outil Hook applique l’intégration continue à un corpus de textes, pour tester sa compatibilité avec les guidelines. Les schémas XML ne sont pas assez puissants pour le faire à plusieurs niveaux. Le test Hook est à réaliser par la classe. T. Clérice a déjà configuré Travis : il est possible de créer une pull request pour le modifier.</p>
+                  
+                  <p>NB : n'utiliser que XPath 1 pour que les chemins soient compatibles avec tous les logiciels.</p>
+               </div3>
+            </div2>
+            <div2>
+               <head>Rendre l'encodage compatible avec la norme CapiTainS</head>
+               <p>Pour qu'un fichier TEI soit compatible avec la norme CapiTainS, il doit contenir trois éléments :</p>
+               <div3>
+                  <p>Un identifiant : il s'agit de l'urn, qu'on place sur la balise du document </p>
+                  <egXML xmlns="http://www.tei-c.org/ns/Examples">
+                     <body n="urn:cts:libOp:viaf[n°compositeur].viaf[n°oeuvre].TNAH2020-fre1">
+                        [...]
+                     </body>
+                  </egXML>
+                  <p>C'est à la classe de définir sa propre norme. Les identifiants peuvent être sémantiques ou aléatoires. L’avantage des identifiants aléatoires est que quelle que soit la modification/orientation du corpus, l’identifiant n’a pas besoin de changer.</p>
+               </div3>
+               <div3>
+                  <p>Un attribut @lang qu'on place aussi dans la balise</p>
+                  <egXML xmlns="http://www.tei-c.org/ns/Examples">
+                     <body n="urn:cts:libOp:viaf[n°compositeur].viaf[n°oeuvre].TNAH2020-fre1" xml:lang="fre">
+                        [...]
+                     </body>
+                  </egXML>
+               </div3>
+               <div3>
+                  <p>Un modèle de citation, encapsulé dans la balise :</p>
+                  
+                  <p>On peut penser à une œuvre comme à un arbre : le livre contient des poèmes qui contiennent des vers. La hiérarchie TEI doit donc être stable et contenir un système de citation déclaré à base d’Xpath.</p>
+                  
+                  <p>Puisque nous avons choisit le même encodage, cette partie est la même pour tous :</p>
+                  <egXML xmlns="http://www.tei-c.org/ns/Examples">
+                     <encodingDesc>
+                        
+                        <refsDecl n="CTS">
+                           
+                           <cRefPattern 
+                              
+                              n="speech"
+                              
+                              matchPattern="(\w+).(\w+).(\w+)"
+                              
+                            replacementPattern="#xpath(/tei:TEI/tei:text/tei:body/tei:div[@type='act'][@n='$1']/tei:div[@type='scene'][@n='$2']/tei:sp[@n='$3'])">
+                              
+                              
+                              <p>Ce pointeur extrait les niveaux de citation 1, 2 et 3, soit acte, scène et tour de parole.</p>
+                              
+                           </cRefPattern>
+                           
+                           <cRefPattern 
+                              
+                              n="scene"
+                              
+                              matchPattern="(\w+).(\w+)"
+                              
+                              replacementPattern="#xpath(/tei:TEI/tei:text/tei:body/tei:div[@type='act'][@n='$1']/tei:div[@type='scene'][@n='$2'])">
+                              
+                              <p>Ce poiteur extrait les niveaux de citation 1 et 2, soit les actes et scènes.</p>
+                              
+                           </cRefPattern>
+                           
+                           <cRefPattern 
+                              
+                              n="act"
+                              
+                              matchPattern="(\w+)"
+                              
+                              replacementPattern="#xpath(/tei:TEI/tei:text/tei:body/tei:div[@type='act'][@n='$1'])">
+                              
+                              
+                              <p>Ce pointeur extrait le premier niveau de citation du texte, soit les actes.</p>
+                              
+                           </cRefPattern>
+                           
+                        </refsDecl>
+                        
+                     </encodingDesc>
+                  </egXML>
+               </div3>
+               <div3>
+                  <head>Les métadonnées</head>
+                  <p>Les métadonnées liées à l'auteur. Le fichier__ cts__.xml lié à l'auteur contient l'encodage suivant :</p>
+                  <egXML xmlns="http://www.tei-c.org/ns/Examples">
+                     <ti:textgroup xmlns:ti="http://chs.harvard.edu/xmlns/cts" urn="urn:cts:libOp:viaf[n°auteur]">
+                        <ti:groupname xml:lang="fre">Prénom Nom</ti:groupname>
+                     </ti:textgroup>
+                  </egXML>
+                  <p>où ti: est le nom de domaine défini par la norme CapiTainS pour les fichiers de métadonnées.</p>
+                  
+                  <p>Les métadonnées liées au texte encodé. Le fichier __cts__.xml lié à une oeuvre contient l'encodage suivant :</p>
+                  <egXML xmlns="http://www.tei-c.org/ns/Examples">
+                     <ti:work xmlns:ti="http://chs.harvard.edu/xmlns/cts"
+                        groupUrn="urn:cts:libOp:viaf[n°auteur]"
+                        urn="urn:cts:libOp:viaf[n°auteur].viaf[n°oeuvre]"
+                        xml:lang="fre"
+                        >
+                        <ti:title xml:lang="fre">titre de l'opéra</ti:title>
+                        <ti:edition 
+                           workUrn="urn:cts:libOp:viaf[n°auteur].viaf[n°oeuvre]" 
+                           urn="urn:cts:libOp:viaf[n°auteur].viaf[n°oeuvre].TNAH2020-fre1"
+                           >
+                           <ti:label xml:lang="fre">Titre de l'édition</ti:label>
+                           <ti:description xml:lang="fre">
+                              description du fichier
+                           </ti:description>
+                        </ti:edition>
+                     </ti:work>
+                  </egXML>
+                  <p>où la balise label pourrait contenir par exemple : Nom_opéra, Auteur (TNAH2020) et la balise description : Balisage sémantique de Nom_opéra par la promo TNAH 2020.</p>
+                  
+                  <p>NB : pour vérifier la compatibilité des fichiers avec la norme, le site CapiTainS.org propose une interface de test à l'adresse suivante : https://capitains-validator.herokuapp.com/analysis</p>
+               </div3>
+               <div3>
+                  <head>
+                     L'organisation et le nommage des fichiers
+                  </head>
+                  <p>Les dossiers doivent être nommés selon le bout d'URN correspondant: ainsi le dossier d'auteur (textgroup) prendra comme nom viaf[n°auteur], même principe pour le dossier du work (viaf[n°oeuvre]) et le nommage du fichier final(viaf[n°auteur].viaf[n°oeuvre].TNAH2020-fre1.xml): voir la documentation Capitains sur la structure des dossiers (http://capitains.org/pages/guidelines#directory-structure). Ainsi, depuis la racine du dépôt Libretti, on aurait:</p>
+                  <egXML xmlns="http://www.tei-c.org/ns/Examples">
+                     data/
+                     ....|- viaf[n°auteur]
+                     ........__cts__.xml
+                     ........|- viaf[n°oeuvre]
+                     ............__cts__.xml
+                     ............viaf[n°auteur].viaf[n°oeuvre].TNAH2020-fre1.xml
+                     ........|- viaf[n°oeuvre]
+                     ............__cts__.xml
+                     ............viaf[n°auteur].viaf[n°oeuvre].TNAH2020-fre1.xml
+                  </egXML>
+               </div3>
+            </div2>
+            <div2>
+               <head>Balises utilisées</head>
+               
+               <div3>
+                  <head>teiHeader</head>
+                  <!-- auteurs, attributs obligatoires ; encodingDesc à copier coller depuis la doc mais pas rendu obligatoire : Gwenaëlle-->
+                  <p>Le <gi>teiHeader</gi>, enfant direct de l'élément racine <gi>TEI</gi>, est composé de deux parties principales : <specList>
+                     <specDesc key="fileDesc"/>
+                     <specDesc key="encodingDesc"/>
+                  </specList></p>
+                  <p>Le choix d'un <gi>teiHeader</gi> minimaliste s'est imposé dans l'esprit des normes <hi>CapiTainsS</hi>, afin de faciliter la citation de textes et les éventuelles mises à jour des données.</p>
+                  <p>Le <gi>fileDesc</gi> est constitué de trois éléments principaux : <specList>
+                     <specDesc key="titleStmt"/>
+                     <specDesc key="publicationStmt"/>
+                     <specDesc key="sourceDesc"/>
+                  </specList></p>
+                  <p>On trouve dans le <gi>titleStmt</gi> au minimum deux informations : la balise <gi>title</gi> qui correspond au titre de l'opéra encodé, et la balise <gi>author</gi>. Pour cette dernière, il a été décidé de rendre l'attribut <att>role</att> obligatoire, ainsi que la valeur <val>songwriter</val>,car un lecteur lambda recherchera intuitivement un opéra selon son compositeur, et non l'auteur du livret. Toutefois, il est possible de rendre hommage aux librettistes grâce à la valeur <val>librettist</val> également associée à l'attribut <att>role</att>.</p>
+                  <p>Le <gi>publicationStmt</gi> contient une seule balise <gi>p</gi> obligatoire afin de spécifier les responsables de l'encodage et le contexte de la publication des livrets encodés. Cette spécifiation prend la forme suivante :
+                     <egXML xmlns="http://www.tei-c.org/ns/Examples">
+                        <publicationStmt>
+                           <p>Ecole nationale des chartes, projet libretti TNAH, promotion 2019-2020.</p>
+                        </publicationStmt>
+                     </egXML></p>
+                  <p>Quant au <gi>sourceDesc</gi>, il contient de même une unique balise <gi>p</gi> obligatoire qui sert à indiquer la source d'où a été extrait le texte à encoder.</p>
+                  <p>L'<gi>encodingDesc</gi> suit la réglémentation de <hi>CapiTainS</hi> comme ci-dessous :
+                     <egXML xmlns="http://www.tei-c.org/ns/Examples">
+                        <encodingDesc>
+                           <refsDecl n="CTS">
+                              <cRefPattern 
+                                 n="speech"
+                                 matchPattern="(\w+).(\w+).(\w+)"
+                            replacementPattern="#xpath(/tei:TEI/tei:text/tei:body/tei:div[@type='act'][@n='$1']/tei:div[@type='scene'][@n='$2']/tei:sp[@n='$3'])">
+                                 <p>Ce pointeur extrait les niveaux de citation 1, 2 et 3, soit acte, scène et tour de parole.</p>
+                              </cRefPattern>
+                              <cRefPattern 
+                                 n="scene"
+                                 matchPattern="(\w+).(\w+)"
+                                 replacementPattern="#xpath(/tei:TEI/tei:text/tei:body/tei:div[@type='act'][@n='$1']/tei:div[@type='scene'][@n='$2'])">
+                                 <p>Ce poiteur extrait les niveaux de citation 1 et 2, soit les actes et scènes.</p>
+                              </cRefPattern>
+                              <cRefPattern 
+                                 n="act"
+                                 matchPattern="(\w+)"
+                                 replacementPattern="#xpath(/tei:TEI/tei:text/tei:body/tei:div[@type='act'][@n='$1'])">
+                                 <p>Ce pointeur extrait le premier niveau de citation du texte, soit les actes.</p> 
+                              </cRefPattern> 
+                           </refsDecl>  
+                        </encodingDesc>
+                     </egXML></p>
+                  <p>Trois niveaux de citation ont été déterminé dans un souci d'homogénéisation de l'encodage des différents livrets : les répliques, les scènes et les actes. Ces niveaux sont indiqués dans l'attribut <att>n</att> de l'élément <gi>cRefPattern</gi>, lui-même imbriqué dans l'élément <gi>refsDecl</gi> qui contient un attribut <att>n</att> afin de rappeler le choix du modèle CTS, soit <hi>Canonical Text Services</hi>. L'élément <gi>cRefPattern</gi> permet aussi d'indiquer le niveau de citation, grâce à des expressions régulières dans l'atttribut <att>matchpattern</att>, et leur chemin d'accès grâce à une formule XPath 1.</p>
+               </div3>
+               
+               <div3>
+                  
+                  <head>Structuration du text</head>
+                  
+                  <p>
+                     
+                     Le <gi>text</gi>, enfant direct de l'élément racine <gi>TEI</gi>, comporte deux parties : le <gi>front</gi>, qu'on ne retrouve pas dans l'ensemble des libretti, et le <gi>body</gi>. 
+                     
+                     <specList>
+                        
+                        <specDesc key="front"/>
+                        <specDesc key="body"/>
+                        
+                     </specList>
+                     
+                  </p>
+                  
+                  <div4>
+                     
+                     <head>Structuration du front</head>
+                     
+                     <p>Certains des Libretti comportent des textes préliminaires, tels que des préfaces ou des dédicaces. Il a été décidé de les encoder dans la balise <gi>p</gi>, contenue dans la balise <gi>front</gi>. Certains des textes préliminaires des libretti doivent être encodés dans la balise <gi>set</gi>. Il s'agit plus spécifiquement des descriptions du décor, du temps, du lieu, de l'ordre d'entrée en scène, ou encore de l'action de la pièce. Les balises <gi>front</gi>, <gi>p</gi> et <gi>set</gi> n'ont pas pu être contrainte dans l'ODD. Il revient donc à la charge de toutes les personnes ayant des textes préliminaires dans leur libretto de veiller à les encoder dans les balises mentionnées ci-dessus.
+                        
+                     </p>
+                     
+                  </div4>
+                  
+                  <div4>
+                     
+                     <head>Structuration du body</head>
+                     
+                     <p>L'élément body comporte obligatoire l'attribut <att>n</att>, contenant l'urn, ainsi que l'attribut <att>xml:lang</att>, afin d'être conforme aux normes Capitain's.</p>
+                     
+                     <egXML xmlns="http://www.tei-c.org/ns/Examples">
+                        
+                        <body n="urn:cts:libOp:viaf7575200.viaf175352658.TNAH2020-fre1" xml:lang="fre">
+                           
+                        </body>
+                        
+                     </egXML>
+                     
+                     <div5>
+                        
+                        <head>Structuration de la liste des personnages</head>
+                        
+                        <p>L'ensemble des libretti possède une liste de personnages, qui est encodée dans la balise <gi>castList</gi>. Chaque personnage est encodé dans l'élément <gi>castItem</gi>. Pour des raisons de simplifications de l'encodage, il a été choisie de se limiter à ces deux balises pour la liste des personnages.
+                           
+                           <egXML xmlns="http://www.tei-c.org/ns/Examples">
+                              
+                              <castList>
+                                 
+                                 <castItem>DALILA</castItem>
+                                 
+                                 <castItem>SAMSON</castItem>
+                                 
+                                 <castItem>LE GRAN-PRÊTRE de Dagon </castItem>
+                                 
+                                 <castItem>ABIMÉLECH</castItem>
+                                 
+                                 <castItem>UN VIEILLARD HÉBREU </castItem>
+                                 
+                                 <castItem>UN MESSAGER PHILISTINS</castItem>
+                                 
+                                 <castItem>PREMIER PHILISTINS</castItem>
+                                 
+                                 <castItem>DEUXIÈME PHILISTIN</castItem>
+                                 
+                                 <castItem>CHOEUR : Hébreux, Philistins</castItem>
+                                 
+                              </castList>
+                              
+                           </egXML>
+                           
+                        </p>
+                        
+                     </div5>
+                     
+                     <div5>
+                        
+                        <head>Les balises portant sur la division du texte </head>
+                        
+                        <p>Afin d'encoder les subsdivisions principales (actes, scènes, tableaux) du texte, il a été choisi d'utiliser les balises <gi>div</gi>, accompagnées d'un attribut <att>type</att>, plutôt que les balises <gi>div1</gi>, <gi>div2</gi>, <gi>div3</gi>. En effet, la subsdivision des libretti n'est pas toujours homogène.  Ainsi, dans certains cas, des actes peuvent contenir des tableaux puis des scènes, alors que d'autres actes du même libretti peuvent contenir uniquement des scènes. Or, en XML TEI, il est nécessaire que les balises <gi>div3</gi> succèdent à des <gi>div2</gi>, qui elle-même succèdent à des <gi>div1</gi>. Les attributs <att>type</att> peuvent contenir soit la valeur "act", "scene", "tableau", "bacchanales", ou "part", ces valeurs ayant été contraintes dans l'ODD. Les éléments <gi>div</gi> sont également accompagnés de l'attribut <att>n</att>, obligatoire. Pour finir, les balises <gi>div</gi> sont suivies de la balise <gi>head</gi>, contenant le nom de la scène des actes ou des scènes ou des tableaux. 
+                           
+                        </p>
+                        
+                     </div5>
+                     
+                     <div5>
+                        
+                        <head>La structuration des sp</head>
+                        
+                        <p>Les éléments <gi>sp</gi>, représentant les tours de paroles, contiennent les balises suivantes : 
+                           
+                           <specList>
+                              
+                              <specDesc key="speaker"/>
+                              
+                              <specDesc key="stage"/>
+                              <specDesc key="lg"/>
+                              
+                              <specDesc key="l"/>
+                              
+                           </specList>
+                           
+                           Les balises <gi>speaker</gi> et <gi>l</gi> sont obligatoires, ce qui n'est pas le cas des balises <gi>stage</gi>.</p>
+                        <p>Le balise <gi>lg</gi> est utilisée pour les couplets et peut admettre un <gi>head</gi> et plusieurs <gi>l</gi>.</p>
+                        
+                        <egXML xmlns="http://www.tei-c.org/ns/Examples">
+                           
+                           <sp>
+                              
+                              <speaker>LES HÉBREUX</speaker>
+                              
+                              <l>Hélas! paroles vaines!</l>
+                              
+                              <l>Pour marcher aux combats,</l>
+                              
+                              <l>Où donc trouver des armes?</l>
+                              
+                              <l>Comment armer nos bras?</l>
+                              
+                              <l>Nous n'avons que nos larmes!</l>
+                              
+                           </sp>
+                           
+                        </egXML>
+                        
+                     </div5>
+                     
+                     <div5>
+                        
+                        <head>Les indications scéniques</head>
+                        
+                        <p>La balise <gi>stage</gi> a été choisies pour les encoder les diverses indications scéniques. Ces indications se retrouvent à divers endroits du libretti.</p>
+                     </div5>
+                  </div4>
+                  
+               </div3>
+               
+               
+            </div2>
+         </div1>
+         <div1>
+            <head>Tableaux des balises utilisées</head>
+            <schemaSpec ident="oddbyexample" start="TEI ">
+               <moduleRef key="tei"/>
+               <!--Checking module textcrit-->
+               <classRef key="att.textCritical"/>
+               <classRef key="model.rdgLike"/>
+               <classRef key="model.rdgPart"/>
+               <classSpec ident="att.textCritical" type="atts" mode="change">
+                  <attList>
+                     <attDef ident="type" mode="delete"/>
+                     <attDef ident="cause" mode="delete"/>
+                     <attDef ident="varSeq" mode="delete"/>
+                     <attDef ident="require" mode="delete"/>
+                  </attList>
+               </classSpec>
+               <!--Checking module msdescription-->
+               <classRef key="model.physDescPart"/>
+               <!--Checking module namesdates-->
+               <classRef key="model.persNamePart"/>
+               <!--Checking module dictionaries-->
+               <classRef key="att.lexicographic"/>
+               <classRef key="model.entryLike"/>
+               <classRef key="model.formPart"/>
+               <classRef key="model.gramPart"/>
+               <classRef key="model.lexicalRefinement"/>
+               <classRef key="model.morphLike"/>
+               <classRef key="model.ptrLike.form"/>
+               <classSpec ident="att.lexicographic" type="atts" mode="change">
+                  <attList>
+                     <attDef ident="expand" mode="delete"/>
+                     <attDef ident="norm" mode="delete"/>
+                     <attDef ident="split" mode="delete"/>
+                     <attDef ident="value" mode="delete"/>
+                     <attDef ident="orig" mode="delete"/>
+                     <attDef ident="location" mode="delete"/>
+                     <attDef ident="mergedIn" mode="delete"/>
+                     <attDef ident="opt" mode="delete"/>
+                  </attList>
+               </classSpec>
+               <!--Checking module tagdocs-->
+               <classRef key="att.combinable"/>
+               <classRef key="att.identified"/>
+               <classRef key="att.repeatable"/>
+               <classRef key="model.contentPart"/>
+               <moduleRef key="tagdocs"
+                  include="classRef elementRef moduleRef schemaSpec elementSpec classSpec content sequence attList attDef valItem valList"/>
+               <elementSpec ident="classRef" mode="change">
+                  <attList>
+                     <attDef ident="expand" mode="delete"/>
+                     <attDef ident="include" mode="delete"/>
+                     <attDef ident="except" mode="delete"/>
+                     <attDef ident="minOccurs" mode="delete"/>
+                     <attDef ident="maxOccurs" mode="delete"/>
+                  </attList>
+               </elementSpec>
+               <elementSpec ident="moduleRef" mode="change">
+                  <attList>
+                     <attDef ident="prefix" mode="delete"/>
+                     <attDef ident="except" mode="delete"/>
+                     <attDef ident="url" mode="delete"/>
+                  </attList>
+               </elementSpec>
+               <elementSpec ident="schemaSpec" mode="change">
+                  <attList>
+                     <attDef ident="prefix" mode="delete"/>
+                     <attDef ident="targetLang" mode="delete"/>
+                     <attDef ident="docLang" mode="delete"/>
+                     <attDef ident="defaultExceptions" mode="delete"/>
+                     <attDef ident="mode" mode="delete"/>
+                  </attList>
+               </elementSpec>
+               <elementSpec ident="elementSpec" mode="change">
+                  <attList>
+                     <attDef ident="prefix" mode="delete"/>
+                     <attDef ident="mode" mode="change">
+                        <valList mode="add" type="closed">
+                           <valItem ident="change"/>
+                        </valList>
+                     </attDef>
+                  </attList>
+               </elementSpec>
+               <elementSpec ident="classSpec" mode="change">
+                  <attList>
+                     <attDef ident="type" mode="change">
+                        <valList mode="add" type="closed">
+                           <valItem ident="atts"/>
+                        </valList>
+                     </attDef>
+                     <attDef ident="generate" mode="delete"/>
+                     <attDef ident="mode" mode="change">
+                        <valList mode="add" type="closed">
+                           <valItem ident="change"/>
+                        </valList>
+                     </attDef>
+                     <attDef ident="type" mode="change">
+                        <valList mode="add" type="closed">
+                           <valItem ident="atts"/>
+                        </valList>
+                     </attDef>
+                  </attList>
+               </elementSpec>
+               <elementSpec ident="content" mode="change">
+                  <attList>
+                     <attDef ident="autoPrefix" mode="delete"/>
+                  </attList>
+               </elementSpec>
+               <elementSpec ident="sequence" mode="change">
+                  <attList>
+                     <attDef ident="minOccurs" mode="delete"/>
+                     <attDef ident="maxOccurs" mode="delete"/>
+                  </attList>
+               </elementSpec>
+               <elementSpec ident="attList" mode="change">
+                  <attList>
+                     <attDef ident="org" mode="delete"/>
+                  </attList>
+               </elementSpec>
+               <elementSpec ident="attDef" mode="change">
+                  <attList>
+                     <attDef ident="usage" mode="change">
+                        <valList mode="add" type="closed">
+                           <valItem ident="req"/>
+                        </valList>
+                     </attDef>
+                     <attDef ident="ns" mode="delete"/>
+                     <attDef ident="mode" mode="change">
+                        <valList mode="add" type="closed">
+                           <valItem ident="change"/>
+                           <valItem ident="delete"/>
+                        </valList>
+                     </attDef>
+                  </attList>
+               </elementSpec>
+               <elementSpec ident="valItem" mode="change">
+                  <attList>
+                     <attDef ident="mode" mode="change">
+                        <valList mode="add" type="closed">
+                           <valItem ident="add"/>
+                        </valList>
+                     </attDef>
+                  </attList>
+               </elementSpec>
+               <elementSpec ident="valList" mode="change">
+                  <attList>
+                     <attDef ident="type" mode="change">
+                        <valList mode="add" type="closed">
+                           <valItem ident="closed"/>
+                        </valList>
+                     </attDef>
+                     <attDef ident="mode" mode="change">
+                        <valList mode="add" type="closed">
+                           <valItem ident="add"/>
+                           <valItem ident="change"/>
+                        </valList>
+                     </attDef>
+                  </attList>
+               </elementSpec>
+               <classSpec ident="att.identified" type="atts" mode="change">
+                  <attList>
+                     <attDef ident="predeclare" mode="delete"/>
+                     <attDef ident="module" mode="delete"/>
+                  </attList>
+               </classSpec>
+               <classSpec ident="att.ascribed.directed" type="atts" mode="change">
+                  <attList>
+                     <attDef ident="toWhom" mode="delete"/>
+                  </attList>
+               </classSpec>
+               <classSpec ident="att.dimensions" type="atts" mode="change">
+                  <attList>
+                     <attDef ident="unit" mode="delete"/>
+                     <attDef ident="quantity" mode="delete"/>
+                     <attDef ident="extent" mode="delete"/>
+                     <attDef ident="precision" mode="delete"/>
+                     <attDef ident="scope" mode="delete"/>
+                  </attList>
+               </classSpec>
+               <classSpec ident="att.damaged" type="atts" mode="change">
+                  <attList>
+                     <attDef ident="agent" mode="delete"/>
+                     <attDef ident="degree" mode="delete"/>
+                     <attDef ident="group" mode="delete"/>
+                  </attList>
+               </classSpec>
+               <classSpec ident="att.datable" type="atts" mode="change">
+                  <attList>
+                     <attDef ident="calendar" mode="delete"/>
+                     <attDef ident="period" mode="delete"/>
+                  </attList>
+               </classSpec>
+               <classSpec ident="att.media" type="atts" mode="change">
+                  <attList>
+                     <attDef ident="width" mode="delete"/>
+                     <attDef ident="height" mode="delete"/>
+                     <attDef ident="scale" mode="delete"/>
+                  </attList>
+               </classSpec>
+               <classSpec ident="att.naming" type="atts" mode="change">
+                  <attList>
+                     <attDef ident="nymRef" mode="delete"/>
+                  </attList>
+               </classSpec>
+               <classSpec ident="att.typed" type="atts" mode="change">
+                  <attList>
+                     <attDef ident="subtype" mode="delete"/>
+                  </attList>
+               </classSpec>
+               <classSpec ident="att.pointing" type="atts" mode="change">
+                  <attList>
+                     <attDef ident="targetLang" mode="delete"/>
+                     <attDef ident="evaluate" mode="delete"/>
+                  </attList>
+               </classSpec>
+               <classSpec ident="att.pointing.group" type="atts" mode="change">
+                  <attList>
+                     <attDef ident="domains" mode="delete"/>
+                     <attDef ident="targFunc" mode="delete"/>
+                  </attList>
+               </classSpec>
+               <classSpec ident="att.segLike" type="atts" mode="change">
+                  <attList>
+                     <attDef ident="function" mode="delete"/>
+                  </attList>
+               </classSpec>
+               <classSpec ident="att.timed" type="atts" mode="change">
+                  <attList>
+                     <attDef ident="start" mode="delete"/>
+                     <attDef ident="end" mode="delete"/>
+                  </attList>
+               </classSpec>
+               <classSpec ident="att.transcriptional" type="atts" mode="change">
+                  <attList>
+                     <attDef ident="status" mode="delete"/>
+                     <attDef ident="cause" mode="delete"/>
+                     <attDef ident="seq" mode="delete"/>
+                  </attList>
+               </classSpec>
+               <classSpec ident="att.personal" type="atts" mode="change">
+                  <attList>
+                     <attDef ident="full" mode="delete"/>
+                     <attDef ident="sort" mode="delete"/>
+                  </attList>
+               </classSpec>
+               <!--Checking module core-->
+               <moduleRef key="core" include="p ref head author title lg l sp speaker stage"/>
+               <elementSpec ident="p" mode="change">
+                  <attList>
+                     <attDef ident="part" mode="change">
+                        <valList mode="add" type="closed">
+                           <valItem ident="N"/>
+                        </valList>
+                     </attDef>
+                  </attList>
+               </elementSpec>
+               <elementSpec ident="ref" mode="change">
+                  <attList>
+                     <attDef ident="type" mode="delete"/>
+                  </attList>
+               </elementSpec>
+               <elementSpec ident="head" mode="change">
+                  <attList>
+                     <attDef ident="type" mode="delete"/>
+                  </attList>
+               </elementSpec>
+               <elementSpec ident="author" mode="change">
+                  <attList>
+                     <attDef ident="role" usage="req" mode="change">
+                        <valList mode="add" type="closed">
+                           <valItem ident="songWritter"></valItem>
+                           <valItem ident="librettist"></valItem>
+                        </valList>
+                     </attDef>
+                  </attList>
+               </elementSpec>
+               <elementSpec ident="title" mode="change">
+                  <attList>
+                     <attDef ident="level" mode="delete"/>
+                     <attDef ident="type" mode="change">
+                        <valList mode="add" type="closed">
+                           <valItem ident="short"/>
+                        </valList>
+                     </attDef>
+                     <attDef ident="type" mode="change">
+                        <valList mode="add" type="closed">
+                           <valItem ident="short"/>
+                        </valList>
+                     </attDef>
+                  </attList>
+               </elementSpec>
+               <elementSpec ident="l" mode="change">
+                  <attList>
+                     <attDef ident="part" mode="change">
+                        <valList mode="add" type="closed">
+                           <valItem ident="N"/>
+                        </valList>
+                     </attDef>
+                  </attList>
+               </elementSpec>
+               <elementSpec ident="stage" mode="change">
+                  <attList>
+                     <attDef ident="type" mode="delete"/>
+                  </attList>
+               </elementSpec>
+               <!--Checking module figures-->
+               <!--Checking module header-->
+               <classRef key="att.patternReplacement"/>
+               <moduleRef key="header"
+                  include="teiHeader fileDesc titleStmt publicationStmt sourceDesc encodingDesc refsDecl cRefPattern"/>
+               <elementSpec ident="encodingDesc" mode="change">
+                  <content>
+                     <sequence preserveOrder="true">
+                        <elementRef key="refsDecl" minOccurs="1" maxOccurs="1"/>
+                     </sequence>
+                  </content>
+               </elementSpec>
+               <elementSpec ident="refsDecl" mode="change">
+                  <content>
+                     <sequence preserveOrder="true">
+                        <elementRef key="cRefPattern" minOccurs="3" maxOccurs="3"/>
+                     </sequence>
+                  </content>
+               </elementSpec>
+               <elementSpec ident="cRefPattern" mode="change">
+                  <content>
+                     <sequence preserveOrder="true">
+                        <elementRef key="p" minOccurs="1" maxOccurs="1"/>
+                     </sequence>
+                  </content>
+               </elementSpec>
+               <elementSpec ident="sourceDesc" mode="change">
+                  <content>
+                     <sequence>
+                        <elementRef key="p" minOccurs="1" maxOccurs="1"/>
+                     </sequence>
+                  </content>
+                  <attList>
+                     <attDef ident="default" mode="change">
+                        <valList mode="add" type="closed">
+                           <valItem ident="false"/>
+                        </valList>
+                     </attDef>
+                  </attList>
+               </elementSpec>
+               <elementSpec ident="titleStmt" mode="change">
+                  <content>
+                     <sequence preserveOrder="true">
+                        <elementRef key="title" minOccurs="1" maxOccurs="1"/>
+                        <elementRef key="author" minOccurs="1" maxOccurs="unbounded"/>
+                     </sequence>
+                  </content>
+               </elementSpec>
+               <elementSpec ident="refsDecl" mode="change">
+                  <attList>
+                     <attDef ident="default" mode="change">
+                        <valList mode="add" type="closed">
+                           <valItem ident="false"/>
+                        </valList>
+                     </attDef>
+                  </attList>
+               </elementSpec>
+               <elementSpec ident="publicationStmt" mode="change">
+                  <content>
+                     <sequence preserveOrder="true">
+                        <elementRef key="p" minOccurs="1" maxOccurs="1"/>
+                     </sequence>
+                  </content>
+               </elementSpec>
+               <!--Checking module gaiji-->
+               <!--Checking module verse-->
+               <!--Checking module transcr-->
+               <!--Checking module linking-->
+               <!--Checking module analysis-->
+               <!--Checking module textstructure-->
+               <moduleRef key="textstructure" include="TEI text body div front"/>
+               <elementSpec ident="TEI" mode="change">
+                  <attList>
+                     <attDef ident="version" mode="delete"/>
+                     <attDef ident="type" mode="delete"/>
+                  </attList>
+               </elementSpec>
+               <elementSpec ident="text" mode="change">
+                  <attList>
+                     <attDef ident="type" mode="delete"/>
+                  </attList>
+               </elementSpec>
+               <elementSpec ident="div" mode="change">
+                  <attList>
+                     <attDef ident="org" mode="change">
+                        <valList mode="add" type="closed">
+                           <valItem ident="uniform"/>
+                        </valList>
+                     </attDef>
+                     <attDef ident="sample" mode="change">
+                        <valList mode="add" type="closed">
+                           <valItem ident="complete"/>
+                        </valList>
+                     </attDef>
+                     <attDef ident="part" mode="change">
+                        <valList mode="add" type="closed">
+                           <valItem ident="N"/>
+                        </valList>
+                     </attDef>
+                     <attDef ident="type" mode="change" usage="req">
+                        <valList mode="add" type="closed">
+                           <valItem ident="act"/>
+                           <valItem ident="part"/>
+                           <valItem ident="scene"/>
+                           <valItem ident="tableau"/>
+                        </valList>
+                     </attDef>
+                  </attList>
+               </elementSpec>
+               <!--Checking module drama-->
+               <moduleRef key="drama" include="set castList castItem"/>
+               <elementSpec ident="castItem" mode="change">
+                  <attList>
+                     <attDef ident="type" mode="change">
+                        <valList mode="add" type="closed">
+                           <valItem ident="role"/>
+                        </valList>
+                     </attDef>
+                     <attDef ident="type" mode="change">
+                        <valList mode="add" type="closed">
+                           <valItem ident="role"/>
+                        </valList>
+                     </attDef>
+                  </attList>
+               </elementSpec>
+            </schemaSpec>
+         </div1>
+      </body>
+   </text>
+</TEI>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ti:work xmlns:ti="http://chs.harvard.edu/xmlns/cts"
+    groupUrn="urn:cts:libOp:viaf10034167"
+    urn="urn:cts:libOp:viaf10034167.viaf185075801"
+    xml:lang="fre"
+    >
+    <ti:title xml:lang="fre">Barbe-Bleue</ti:title>
+    <ti:edition 
+        workUrn="urn:cts:libOp:viaf10034167.viaf185075801" 
+        urn="urn:cts:libOp:viaf10034167.viaf185075801.TNAH2020-fre1"
+        >
+        <ti:label xml:lang="fre">BARBE-BLEUE</ti:label>
+        <ti:description xml:lang="fre">OPÉRA-BOUFFE EN TROIS ACTES</ti:description>
+    </ti:edition>
+</ti:work>
