@@ -1,21 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?xml-model href="http://www.tei-c.org/release/xml/tei/custom/schema/relaxng/tei_all.rng" type="application/xml" schematypens="http://relaxng.org/ns/structure/1.0"?>
-<?xml-model href="http://www.tei-c.org/release/xml/tei/custom/schema/relaxng/tei_all.rng" type="application/xml"
-	schematypens="http://purl.oclc.org/dsdl/schematron"?>
+<?xml-model href="libretti/ODD/out/librettiODD.rng" type="application/xml" schematypens="http://relaxng.org/ns/structure/1.0"?>
 <TEI xmlns="http://www.tei-c.org/ns/1.0">
    <teiHeader>
       <fileDesc>
          <titleStmt>
             <title>Barbe-Bleue</title>
-            <author role="songwriter">Jacques Offenbach</author>
-            <author role="librettiste">Henri Meilhac</author>
-            <author role="librettiste">Ludovic Halévy</author>
+            <author role="songWriter">Jacques Offenbach</author>
+            <author role="librettist">Henri Meilhac</author>
+            <author role="librettist">Ludovic Halévy</author>
          </titleStmt>
          <publicationStmt>
             <p>Ecole nationale des chartes, projet libretti TNAH, promotion 2019-2020</p>
-            <p>
-               <date>1866</date>
-            </p>
          </publicationStmt>
          <sourceDesc>
             <p>https://fr.wikisource.org/wiki/Barbe-Bleue</p>
